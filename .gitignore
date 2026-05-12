@@ -1,0 +1,24 @@
+# Secrets — never commit
+.env
+application-prod.yml
+*.pem
+*.key
+
+# Build
+target/
+*.jar
+*.war
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/

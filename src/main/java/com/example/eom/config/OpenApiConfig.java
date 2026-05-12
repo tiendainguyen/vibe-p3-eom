@@ -19,7 +19,6 @@ public class OpenApiConfig {
                         .title("E-commerce Order Management API")
                         .description("REST API for order management, payments, inventory, and notifications")
                         .version("1.0.0"))
-                .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
                 .components(new Components()
                         .addSecuritySchemes(securitySchemeName, new SecurityScheme()
                                 .name(securitySchemeName)

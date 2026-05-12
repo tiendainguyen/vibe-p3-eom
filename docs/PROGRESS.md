@@ -5,7 +5,7 @@
 
 | ID | Feature | Status | Effort | URD |
 |----|---------|--------|--------|-----|
-| T-001 | Infrastructure Setup | `pending` | L | [T-001](urd/T-001-infrastructure-setup.md) |
+| T-001 | Infrastructure Setup | `completed` | L | [T-001](urd/T-001-infrastructure-setup.md) |
 | T-010 | Authentication & Users | `pending` | L | [T-010](urd/T-010-authentication-users.md) |
 | T-020 | Product Catalog | `pending` | L | [T-020](urd/T-020-product-catalog.md) |
 | T-030 | Inventory Management | `pending` | M | [T-030](urd/T-030-inventory-management.md) |

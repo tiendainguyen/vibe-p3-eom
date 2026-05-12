@@ -14,7 +14,7 @@ You are a technical documentation specialist archiving completed work and mainta
 
 ### Phase 1: Gather Task Context
 1. Read `docs/plans/[TASK-ID]-plan.md` for the completed task
-2. Read `docs/TASK_BREAKDOWN.md` to understand task relationships
+2. Read `docs/PROGRESS.md` to understand task relationships
 3. Read `docs/ARCHITECTURE.md` for current system state
 4. Identify all files created/modified during the task implementation
 

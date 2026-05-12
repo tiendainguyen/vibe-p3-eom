@@ -1,15 +1,14 @@
 ---
 name: task-breakdown
-description: Analyzes assignment.md and breaks the project into business-feature tasks (one task per feature). For each task generates a URD saved to docs/urd/T-XXX-<feature>.md. Also generates docs/SRS.md and updates docs/TASK_BREAKDOWN.md as the master index. Use when the user runs /task-breakdown.
+description: Analyzes assignment.md and breaks the project into business-feature tasks (one task per feature). For each task generates a URD saved to docs/urd/T-XXX-<feature>.md. Also creates docs/PROGRESS.md as a minimal status board. Use when the user runs /task-breakdown.
 ---
 
 # Task Breakdown Skill
 
 ## Purpose
-Read `assignment.md` and produce three outputs:
-1. `docs/SRS.md` — full Software Requirements Specification for the project
-2. `docs/urd/T-XXX-<feature>.md` — one User Requirements Document per business feature
-3. `docs/TASK_BREAKDOWN.md` — master index linking every task to its URD
+Read `assignment.md` and produce two outputs:
+1. `docs/urd/T-XXX-<feature>.md` — one User Requirements Document per business feature
+2. `docs/PROGRESS.md` — minimal status board (ID, feature name, status, URD link)
 
 Tasks are split **by business feature only** — not by technical layer. One task = one cohesive business capability. Implementation layers (Domain → Repository → Service → Controller) are detailed inside each URD, not at the breakdown level.
 
@@ -46,74 +45,7 @@ Typical features for an e-commerce API (adapt to the actual assignment):
 - Effort: S (< 1h) · M (1–2h) · L (2–4h) · XL (4–8h)
 - Note which tasks are blocked by others (dependencies)
 
-### Phase 4: Write SRS
-Save to `docs/SRS.md`. Include:
-
-```markdown
-# Software Requirements Specification — [Project Name]
-
-> Version: 1.0  
-> Date: YYYY-MM-DD  
-> Source: assignment.md
-
-## 1. Project Overview
-One paragraph: what the system does, who uses it, the business value.
-
-## 2. Stakeholders & User Roles
-| Role | Description | Permissions |
-|------|-------------|-------------|
-| Guest | Unauthenticated visitor | Browse catalog only |
-| Customer | Registered user | Cart, orders, payments |
-| Admin | Staff operator | Order management, inventory, webhooks |
-
-## 3. Functional Requirements
-One section per feature. Use requirement IDs (FR-XXX).
-
-### 3.1 Feature Name
-| ID | Requirement | Priority |
-|----|-------------|----------|
-| FR-001 | ... | Must Have |
-
-[Repeat for each feature]
-
-## 4. Non-Functional Requirements
-| ID | Category | Requirement |
-|----|----------|-------------|
-| NFR-001 | Security | All secrets via environment variables — never hardcoded |
-| NFR-002 | Security | JWT stateless auth — no server sessions |
-| NFR-003 | Performance | Product catalog reads cached in Redis |
-| NFR-004 | Reliability | Inventory mutations use pessimistic locking |
-| NFR-005 | Async | Email notifications sent via RabbitMQ queue |
-[Add project-specific NFRs]
-
-## 5. External Integrations
-| System | Purpose | Auth Method |
-|--------|---------|-------------|
-
-## 6. Technology Stack
-| Concern | Technology | Reason |
-|---------|------------|--------|
-
-## 7. Data Model Overview
-High-level entity relationships (text diagram).
-
-## 8. API Design Principles
-- RESTful conventions: plural nouns, HTTP verbs, status codes
-- All responses wrapped in consistent envelope (or plain DTO — document choice)
-- Pagination via `page` + `size` query params
-- Errors follow `ErrorResponseDTO` shape from GlobalExceptionHandler
-
-## 9. Security Architecture
-- Auth flow summary
-- Which endpoints are public vs. authenticated vs. admin-only
-- Input validation strategy
-- Secrets management
-
-## 10. Constraints & Assumptions
-List any known constraints (team size, timeline, deployment target).
-```
-
-### Phase 5: Write URDs
+### Phase 4: Write URDs
 For each feature task, save `docs/urd/T-XXX-<kebab-feature-name>.md`:
 
 ```markdown
@@ -186,43 +118,30 @@ Ordered list of what to build (for use by /feat-init and /feat-apply):
 Performance, caching, transactional requirements specific to this feature.
 ```
 
-### Phase 6: Write TASK_BREAKDOWN.md (master index)
-Save to `docs/TASK_BREAKDOWN.md`:
+### Phase 5: Write PROGRESS.md (status board)
+Save to `docs/PROGRESS.md`. Minimal — only what changes as work progresses:
 
 ```markdown
-# Task Breakdown — [Project Name]
+# Progress — [Project Name]
 
-> Generated: YYYY-MM-DD  
-> Source: assignment.md  
-> SRS: [docs/SRS.md](SRS.md)
+> Source: assignment.md
+> URDs: [docs/urd/](urd/)
 
-## Summary
-- **Total Features:** XX
-- **Total Estimated Effort:** XX–XX hours
-- **Critical Path:** T-001 → T-010 → T-020 → T-030 → T-040 → ...
-
-## Feature Tasks
-
-| ID | Feature | Status | Effort | Dependencies | URD |
-|----|---------|--------|--------|--------------|-----|
-| T-001 | Infrastructure Setup | `pending` | M | — | [URD](urd/T-001-infrastructure.md) |
-| T-010 | Authentication & Users | `pending` | L | T-001 | [URD](urd/T-010-auth.md) |
+| ID | Feature | Status |
+|----|---------|--------|
+| T-001 | Infrastructure Setup | `pending` |
+| T-010 | Feature Name | `pending` |
 [One row per feature]
 
-## Status Legend
 `pending` · `in_progress` · `completed` · `blocked`
-
-## Dependency Graph
-[ASCII or text diagram showing the critical path]
 ```
 
-### Phase 7: Validation Checklist
+### Phase 6: Validation Checklist
 Before completing:
-- [ ] Every feature from `assignment.md` has a task + URD
+- [ ] Every feature from `assignment.md` has a URD in `docs/urd/`
 - [ ] Each URD has a complete API endpoint table
 - [ ] Each URD has testable acceptance criteria
-- [ ] SRS covers all functional + non-functional requirements
-- [ ] `TASK_BREAKDOWN.md` links to every URD file
+- [ ] `PROGRESS.md` has one row per task
 - [ ] No task has a circular dependency
 - [ ] Infrastructure is always T-001 (no dependencies)
 
@@ -237,8 +156,7 @@ Before completing:
 ---
 
 ## Output
-1. `docs/SRS.md` — project-wide requirements specification
-2. `docs/urd/T-XXX-<feature>.md` — one URD per task
-3. `docs/TASK_BREAKDOWN.md` — master index with status tracking
+1. `docs/urd/T-XXX-<feature>.md` — one URD per task
+2. `docs/PROGRESS.md` — status board
 
 Report a summary to the user: total tasks, total estimated effort, critical path.

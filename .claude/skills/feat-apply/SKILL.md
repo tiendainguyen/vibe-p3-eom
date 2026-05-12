@@ -1,6 +1,6 @@
 ---
 name: feat-apply
-description: Executes the approved implementation plan for a task by writing Spring Boot code following architectural boundaries, running tests, and updating task status in docs/TASK_BREAKDOWN.md. Use when the user runs /feat-apply T-XXX to implement a task that has an approved plan in docs/plans/.
+description: Executes the approved implementation plan for a task by writing Spring Boot code following architectural boundaries, running tests, and updating task status in docs/PROGRESS.md. Use when the user runs /feat-apply T-XXX to implement a task that has an approved plan in docs/plans/.
 ---
 
 # Feature Apply Skill
@@ -98,7 +98,7 @@ Update `docs/plans/[TASK-ID]-plan.md`:
 - Note actual implementation time vs. estimate
 
 ### Phase 6: Mark Task Complete
-Update `docs/TASK_BREAKDOWN.md`:
+Update `docs/PROGRESS.md`:
 - Change task status from "pending" to "completed"
 - Add completion date
 

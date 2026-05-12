@@ -20,6 +20,29 @@
   └──► Stripe API   (payment processing)
 ```
 
+## Source Tree
+
+```
+src/main/java/com/example/eom/
+├── Application.java
+├── config/
+├── controller/
+│   └── admin/
+├── service/
+├── repository/
+├── domain/
+│   └── enums/
+└── dto/
+
+src/main/resources/
+├── application.yml
+└── db/migration/     ← Flyway V1–V8
+
+src/test/
+├── java/com/example/eom/
+└── resources/application-test.yml
+```
+
 ## Layer Responsibilities
 
 | Layer | Location | Does | Does NOT |

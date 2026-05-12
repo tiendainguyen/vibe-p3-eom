@@ -1,19 +1,19 @@
 ---
 name: feat-init
-description: Creates a detailed implementation plan for a specific task from docs/TASK_BREAKDOWN.md, including files to create/modify, step-by-step implementation instructions, security checklist, and testing strategy. Saves the plan to docs/plans/T-XXX-plan.md. Use when the user runs /feat-init T-XXX to plan a task before implementing it.
+description: Creates a detailed implementation plan for a specific task from docs/PROGRESS.md, including files to create/modify, step-by-step implementation instructions, security checklist, and testing strategy. Saves the plan to docs/plans/T-XXX-plan.md. Use when the user runs /feat-init T-XXX to plan a task before implementing it.
 ---
 
 # Feature Init Skill
 
 ## Purpose
-Initialize a detailed implementation plan for a specific task from TASK_BREAKDOWN.md, following Spring Boot best practices and project architecture rules.
+Initialize a detailed implementation plan for a specific task from PROGRESS.md, following Spring Boot best practices and project architecture rules.
 
 ## Instructions
 
 You are a senior Spring Boot developer creating a detailed implementation plan for a specific task.
 
 ### Phase 1: Task Context Loading
-1. Read `docs/TASK_BREAKDOWN.md` to find the target task by ID and its URD link
+1. Read `docs/PROGRESS.md` to find the target task by ID and its URD link
 2. Read `docs/urd/T-XXX-<feature>.md` — the URD for this task (contains user stories, API endpoints, entities, business rules, and acceptance criteria). This is the primary requirements source.
 3. Read `docs/ARCHITECTURE.md` to understand architectural constraints
 4. Read `CLAUDE.md` for code style and conventions

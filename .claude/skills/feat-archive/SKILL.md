@@ -1,228 +1,111 @@
 ---
 name: feat-archive
-description: Archives a completed task by creating a structured archive in docs/archive/T-XXX/, updating ARCHITECTURE.md and security.md if needed, and maintaining or creating feature bundles in docs/bundles/. Use when a task is finished and the user runs /feat-archive T-XXX to preserve implementation details, key decisions, and cross-references for future reference.
+description: After a feature is implemented, creates a compact context bundle at docs/bundles/T-XXX-<feature>.md. The bundle maps every source file to its business logic so future sessions can load full context in ~1 read instead of reading all source files. Use when the user runs /feat-archive T-XXX.
 ---
 
-# Feature Archive Skill
+# Feat Archive Skill
 
 ## Purpose
-Archive completed task documentation, update architectural records, and bundle relevant documentation for future reference or task updates.
+Create a single, dense context document (`docs/bundles/T-XXX-<feature>.md`) that captures everything needed to understand or modify this feature in a future session — without re-reading all source files.
+
+The bundle format is designed for **context efficiency**: one file load ≈ full feature context.
+
+---
 
 ## Instructions
 
-You are a technical documentation specialist archiving completed work and maintaining project knowledge base.
+### Phase 1: Identify All Feature Files
+1. Find the GitHub issue number for this task ID — try in order:
+   - If `docs/PROGRESS.md` exists: read it and find the `#N` for this task ID
+   - Otherwise: search GitHub — `gh issue list --search "T-XXX in:title" --json number,title --jq '.[0].number'`
+2. Use git to find all files changed in this feature:
+   ```bash
+   git diff --name-only HEAD~N HEAD   # or git log --name-only
+   ```
+3. Read each file to understand its current logic
 
-### Phase 1: Gather Task Context
-1. Read `docs/plans/[TASK-ID]-plan.md` for the completed task
-2. Read `docs/PROGRESS.md` to understand task relationships
-3. Read `docs/ARCHITECTURE.md` for current system state
-4. Identify all files created/modified during the task implementation
+### Phase 2: Write the Bundle
+Save to `docs/bundles/T-XXX-<kebab-feature-name>.md`.
 
-### Phase 2: Create Task Archive
-Create comprehensive archive in `docs/archive/[TASK-ID]/`:
+The bundle has a strict format — every section must be complete but tight:
 
-#### 2.1 Archive Structure
-```
-docs/archive/T-XXX/
-├── summary.md              # Executive summary
-├── implementation.md       # Detailed implementation notes
-├── code-snippets.md        # Key code examples
-├── tests.md                # Test coverage summary
-└── references.md           # Related files and tasks
-```
-
-#### 2.2 Summary.md Content
 ```markdown
-# Task T-XXX Archive — [Task Description]
+---
+feature: Feature Name
+task: T-XXX
+issue: #N
+archived: YYYY-MM-DD
+files:
+  - src/main/java/com/example/eom/...
+  - [all files belonging to this feature]
+---
 
-> Completed: YYYY-MM-DD
-> Feature Area: [e.g., Product Catalog]
-> Layer: [e.g., Service]
-> Effort: [Estimated vs. Actual]
+# Bundle: Feature Name
 
-## What Was Built
-[Brief description of what was implemented]
+## API Surface
+| Method | Path | Auth | Handler |
+|--------|------|------|---------|
+| POST | /api/... | public | Controller.method() |
 
-## Key Files
-- src/main/java/.../[File1].java — [Purpose]
-- src/main/java/.../[File2].java — [Purpose]
-- src/test/java/.../[TestFile].java — [Purpose]
+## Logic Map
 
-## Dependencies Satisfied
-This task unblocked:
-- T-XXX: [Description]
-- T-YYY: [Description]
+### ClassName (file: path/to/File.java)
+- `methodName(params)`: [what it does in one line — inputs → key steps → output/side-effect]
+- `methodName2(params)`: [same format]
+[Only methods with real logic — skip trivial getters/setters]
 
-## Architecture Impact
-[How this task affected the overall system architecture]
-
-## Security Notes
-[Any security considerations or compliance notes]
-
-## Lessons Learned
-[What went well, what could be improved]
-```
-
-#### 2.3 Implementation.md Content
-Detailed technical notes:
-- Design decisions made during implementation
-- Deviations from the original plan (with justifications)
-- Challenges encountered and solutions
-- Code patterns used (with examples)
-- Configuration changes made
-
-#### 2.4 Code-snippets.md Content
-Extract and document key code examples:
-- Entity definitions with annotations
-- Service method signatures and key logic
-- Repository query methods
-- Controller endpoints with validation
-- DTO structures
-
-Include brief explanations of why each snippet is important for future reference.
-
-#### 2.5 Tests.md Content
-Document test coverage:
-- List of test classes created
-- Key test cases and what they verify
-- Integration points tested
-- Test data patterns used
-- Coverage metrics (if available)
-
-#### 2.6 References.md Content
-Cross-references:
-- Related tasks (dependencies, dependents)
-- Related documentation (ARCHITECTURE.md sections)
-- External resources consulted
-- Configuration files modified
-- Database migrations created
-
-### Phase 3: Update Architecture Documentation
-Analyze if `docs/ARCHITECTURE.md` needs updates:
-
-#### 3.1 System Diagram
-- If new components added, update the diagram
-- If new external integrations added (Stripe, RabbitMQ, Redis), show them
-
-#### 3.2 Layer Responsibilities Table
-- Add examples from this task if they clarify boundaries
-- Document new patterns established
-
-#### 3.3 Key Boundaries
-- Add new boundary rules if this task established them
-- Example: "Payment processing always goes through PaymentService — no direct Stripe calls from controllers"
-
-#### 3.4 Key Technical Decisions
-Add new entries to the decisions table:
-| Decision | Choice | Reason |
-|----------|--------|--------|
-| Inventory Reservations | Redis with TTL | Fast expiration, prevents overselling |
-
-### Phase 4: Update Security Documentation
-If task introduced new security patterns, update `.claude/rules/security.md`:
-
-Add to relevant sections:
-```markdown
-## [Relevant Section]
-- [New security pattern]: [Description]
-  Example: src/main/java/.../[File].java:123
-```
-
-### Phase 5: Create Task Bundle
-Create a standalone bundle document for this feature area in `docs/bundles/`:
-
-#### 5.1 Bundle Structure
-One bundle per major feature area (e.g., `docs/bundles/product-catalog-bundle.md`)
-
-#### 5.2 Bundle Content
-```markdown
-# Feature Bundle — [Feature Area]
-
-> Last updated: YYYY-MM-DD
-> Tasks included: T-XXX, T-YYY, T-ZZZ
-
-## Overview
-[What this feature area does]
-
-## Key Components
-
-### Domain Layer
-- [Entity 1]: [Purpose] — src/main/java/.../[File].java
-
-### Repository Layer
-- [Repo 1]: [Purpose] — src/main/java/.../[File].java
-
-### Service Layer
-- [Service 1]: [Purpose] — src/main/java/.../[File].java
-
-### Controller Layer
-- [Controller 1]: [Purpose] — src/main/java/.../[File].java
-
-## API Endpoints
-| Method | Path | Description | Request | Response |
-|--------|------|-------------|---------|----------|
-| GET | /api/products | List products | Query params | ProductListDTO |
+[One section per service/filter/component that has logic. Skip pure DTOs and repositories with only derived methods.]
 
 ## Business Rules
-- [Rule 1]: description
-- [Rule 2]: description
+1. [Concrete, testable rule — not vague]
+2. [...]
 
-## Security Considerations
-- [Security aspect 1]
+## Key Decisions
+- [Decision]: [why — one line]
+- [Decision]: [why — one line]
 
-## Testing
-- Unit tests: [Location]
-- Integration tests: [Location]
+## Exception Handling
+- [ExceptionClass] → [HTTP status] — [handler location]
 
-## Related Tasks
-- T-XXX: [Description]
+## Tests
+- [TestClass]: [what it covers, how many cases]
+
+## Files Index
+[Group by layer — keep paths exact so change-do can read them directly]
+**Domain:** path/to/Entity.java, path/to/Enum.java
+**Repository:** path/to/Repo.java
+**Service:** path/to/Service.java, path/to/impl/ServiceImpl.java
+**Controller:** path/to/Controller.java
+**DTO:** path/to/dto/Request.java, path/to/dto/Response.java
+**Config:** path/to/Config.java (if modified)
+**Migration:** src/main/resources/db/migration/VN__name.sql
+**Tests:** src/test/.../ServiceTest.java, src/test/.../ControllerTest.java
 ```
 
-### Phase 6: Update Related Bundles
-If this task affects existing bundles, update them:
-- Add new components to component lists
-- Update architecture diagrams
-- Add new API endpoints
-- Update business rules
-- Refresh "Last updated" timestamp
+### Phase 3: Update ARCHITECTURE.md (only if needed)
+Update only if this feature introduced a **new pattern or boundary rule** not already documented. Skip for standard CRUD additions.
 
-### Phase 7: Generate Completion Report
-Create summary for user:
+### Phase 4: Close GitHub Issue
+Use the issue number found in Phase 1, then close it with a comment pointing to the bundle:
 
-```markdown
-## Task T-XXX — Archived
-
-**Archive Location:** docs/archive/T-XXX/
-
-**Documentation Updated:**
-- Task archive created
-- Architecture.md updated [or: No updates needed]
-- Security.md updated [or: No updates needed]
-- Feature bundle updated: [Bundle name]
-
-**Next Recommended Task:**
-`/feat-init T-XXX` — [Description]
+```bash
+gh issue close <N> --comment "Archived to docs/bundles/T-XXX-<feature>.md"
 ```
 
-## Anti-patterns to Avoid
-- Don't create redundant documentation (reference, don't repeat)
-- Don't archive incomplete or work-in-progress tasks
-- Don't update ARCHITECTURE.md with trivial details
-- Don't create bundles for every single task (group by feature area)
-- Don't include sensitive data in archives (credentials, API keys)
+If `gh` is not authenticated or the command fails, log the error and continue — do not block the archive.
 
-## Maintenance Strategy
-- Archives are append-only (never delete)
-- Bundles are living documents (update as features evolve)
-- ARCHITECTURE.md captures major decisions only
-- Security.md only adds new patterns, not every implementation
+### Phase 5: Report
+Tell the user:
+- Bundle location: `docs/bundles/T-XXX-<feature>.md`
+- File count archived
+- Whether ARCHITECTURE.md was updated
+- GitHub issue #N closed (or skipped with reason if it failed)
 
-## Input
-The user provides the task ID: `/feat-archive T-XXX`
+---
 
-## Output
-1. Complete task archive in `docs/archive/T-XXX/`
-2. Updated `docs/ARCHITECTURE.md` (if needed)
-3. Updated `.claude/rules/security.md` (if needed)
-4. Updated or created feature bundle in `docs/bundles/`
-5. Completion report with next steps
+## Quality Rules for Bundles
+- Logic Map entries must be one line each — if it takes two lines, split the method description
+- Business Rules must be testable ("email must be unique" ✓, "handle user data properly" ✗)
+- File paths must be exact — change-do will use them to Read files directly
+- No copy-paste from Javadoc — describe behavior, not signatures
+- No sensitive values — no example passwords, no real secrets

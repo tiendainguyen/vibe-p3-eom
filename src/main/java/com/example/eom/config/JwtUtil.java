@@ -1,5 +1,7 @@
 package com.example.eom.config;
 
+import com.example.eom.domain.enums.Role;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -31,10 +33,12 @@ public class JwtUtil {
         signingKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(String subject) {
+    public String generateToken(Long userId, String email, Role role) {
         Date now = new Date();
         return Jwts.builder()
-                .subject(subject)
+                .subject(userId.toString())
+                .claim("email", email)
+                .claim("role", role.name())
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + expirationMs))
                 .signWith(signingKey)
@@ -42,23 +46,31 @@ public class JwtUtil {
     }
 
     public String extractSubject(String token) {
-        return Jwts.parser()
-                .verifyWith(signingKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
+        return parseClaims(token).getSubject();
+    }
+
+    public Long extractUserId(String token) {
+        return Long.parseLong(extractSubject(token));
+    }
+
+    public String extractRole(String token) {
+        return (String) parseClaims(token).get("role");
     }
 
     public boolean isTokenValid(String token) {
         try {
-            Jwts.parser()
-                    .verifyWith(signingKey)
-                    .build()
-                    .parseSignedClaims(token);
+            parseClaims(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
+    }
+
+    private Claims parseClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(signingKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 }

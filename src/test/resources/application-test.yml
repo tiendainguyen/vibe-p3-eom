@@ -1,0 +1,49 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;NON_KEYWORDS=USER
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+  flyway:
+    enabled: false
+
+  data:
+    redis:
+      host: localhost
+      port: 6370
+
+  rabbitmq:
+    host: localhost
+    port: 5673
+
+  mail:
+    host: localhost
+    port: 3025
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+      - org.springframework.boot.autoconfigure.mail.MailSenderAutoConfiguration
+
+jwt:
+  secret: test-secret-key-for-unit-tests-only-must-be-at-least-32-bytes
+  expiration-ms: 3600000
+
+stripe:
+  secret-key: sk_test_dummy
+  webhook-secret: whsec_dummy
+
+logging:
+  level:
+    root: WARN
+    com.example.eom: INFO

@@ -1,0 +1,2 @@
+-- Flyway baseline migration
+-- Schema version record only. Feature migrations start at V2__

@@ -1,7 +1,9 @@
 package com.example.eom.config;
 
 import com.example.eom.dto.ErrorResponseDTO;
+import com.example.eom.exception.InsufficientStockException;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.access.AccessDeniedException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +35,12 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponseDTO.of(404, "Not Found", ex.getMessage()));
     }
 
+    @ExceptionHandler(InsufficientStockException.class)
+    public ResponseEntity<ErrorResponseDTO> handleInsufficientStock(InsufficientStockException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponseDTO.of(409, "Insufficient Stock", ex.getMessage()));
+    }
+
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ErrorResponseDTO> handleConflict(IllegalStateException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -43,6 +51,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponseDTO> handleBadRequest(IllegalArgumentException ex) {
         return ResponseEntity.badRequest()
                 .body(ErrorResponseDTO.of(400, "Bad Request", ex.getMessage()));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponseDTO> handleAccessDenied(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ErrorResponseDTO.of(403, "Forbidden", "Access denied"));
     }
 
     @ExceptionHandler(BadCredentialsException.class)

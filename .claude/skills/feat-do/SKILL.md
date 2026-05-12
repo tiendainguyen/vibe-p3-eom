@@ -6,7 +6,7 @@ description: Implements a feature from its GitHub issue. Reads the issue, shows 
 # Feat Do Skill
 
 ## Purpose
-Turn a GitHub issue into working code. Single command from issue → implementation → tests → issue closed.
+Turn a GitHub issue into working code. Single command from issue → implementation → tests → comment on issue. Issue is closed by `/feat-archive` after the bundle is written.
 
 ---
 
@@ -68,8 +68,8 @@ mvn test -q
 ```
 Fix any failures before proceeding.
 
-### Phase 5: Close Issue
-Add a comment summarizing what was implemented, then close:
+### Phase 5: Comment on Issue (do NOT close)
+Add a comment summarizing what was implemented. Do NOT close the issue — it will be closed by `/feat-archive` after the bundle is written:
 ```bash
 gh issue comment <issue-number> --body "$(cat <<'EOF'
 ## Implemented
@@ -80,10 +80,10 @@ gh issue comment <issue-number> --body "$(cat <<'EOF'
 **Tests:** ServiceTest (X cases), ControllerTest (Y cases)
 
 **Swagger:** All endpoints annotated — http://localhost:8080/swagger-ui.html
+
+> Issue will be closed by `/feat-archive T-XXX`
 EOF
 )"
-
-gh issue close <issue-number>
 ```
 
 ### Phase 6: Update PROGRESS.md (if exists)
@@ -103,6 +103,6 @@ If `docs/PROGRESS.md` exists, change task status from `pending` to `completed`. 
 
 Files: [list]
 Tests: [pass count]
-Issue #N: closed
+Issue #N: commented (open — close via /feat-archive T-XXX)
 Next: run /feat-archive T-XXX
 ```

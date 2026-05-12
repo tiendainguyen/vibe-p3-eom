@@ -79,6 +79,17 @@ src/test/
 - `userId` always extracted from JWT principal — never trusted from request body
 - Admin endpoints separated into `Admin*Controller` classes with `@PreAuthorize("hasRole('ADMIN')")`
 
+## Testing Patterns
+
+**Extracting userId in controller tests:** `@WithMockUser` sets a `UserDetails` principal — incompatible with controllers that cast `authentication.getPrincipal()` to `String` (the JWT filter pattern). Use `SecurityMockMvcRequestPostProcessors.authentication()` with a `UsernamePasswordAuthenticationToken(userId, null, roles)` where `userId` is a `String`:
+```java
+private static RequestPostProcessor asUser(String userId) {
+    return authentication(new UsernamePasswordAuthenticationToken(
+            userId, null, List.of(new SimpleGrantedAuthority("ROLE_USER"))));
+}
+```
+See `CartControllerTest` for reference. `@WithMockUser(roles = "ADMIN")` is still fine for role-only checks where the principal is not read.
+
 ## Key Technical Decisions
 
 | Decision | Choice | Reason |

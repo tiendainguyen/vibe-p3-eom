@@ -9,13 +9,19 @@ import com.example.eom.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+
+    private static final Set<String> SORTABLE_FIELDS = Set.of("id", "email", "role", "active", "createdAt");
 
     private final UserRepository userRepository;
 
@@ -30,7 +36,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public Page<AdminUserResponse> listAll(Pageable pageable) {
-        return userRepository.findAll(pageable).map(this::toAdminResponse);
+        return userRepository.findAll(sanitizeSort(pageable)).map(this::toAdminResponse);
     }
 
     @Override
@@ -50,6 +56,12 @@ public class UserServiceImpl implements UserService {
         User user = findOrThrow(userId);
         user.setActive(false);
         return toAdminResponse(userRepository.save(user));
+    }
+
+    private Pageable sanitizeSort(Pageable pageable) {
+        boolean valid = pageable.getSort().isUnsorted() ||
+                pageable.getSort().stream().allMatch(o -> SORTABLE_FIELDS.contains(o.getProperty()));
+        return valid ? pageable : PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("id"));
     }
 
     private User findOrThrow(Long userId) {

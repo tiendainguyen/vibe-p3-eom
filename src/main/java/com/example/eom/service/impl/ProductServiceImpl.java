@@ -11,17 +11,21 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
     private static final String CACHE_NAME = "products";
+    private static final Set<String> SORTABLE_FIELDS = Set.of("id", "name", "price", "category", "createdAt", "updatedAt");
 
     private final ProductRepository productRepository;
 
@@ -31,8 +35,10 @@ public class ProductServiceImpl implements ProductService {
     public Page<ProductResponse> listProducts(String keyword, String category,
                                               BigDecimal minPrice, BigDecimal maxPrice,
                                               Pageable pageable) {
+        String kw  = keyword  != null ? keyword  : "";
+        String cat = category != null ? category : "";
         return productRepository
-                .findAllWithFilters(keyword, category, minPrice, maxPrice, pageable)
+                .findAllWithFilters(kw, cat, minPrice, maxPrice, sanitizeSort(pageable))
                 .map(this::toResponse);
     }
 
@@ -83,6 +89,12 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new EntityNotFoundException("Product not found: " + id));
         product.setActive(false);
         productRepository.save(product);
+    }
+
+    private Pageable sanitizeSort(Pageable pageable) {
+        boolean valid = pageable.getSort().isUnsorted() ||
+                pageable.getSort().stream().allMatch(o -> SORTABLE_FIELDS.contains(o.getProperty()));
+        return valid ? pageable : PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("id"));
     }
 
     private ProductResponse toResponse(Product p) {

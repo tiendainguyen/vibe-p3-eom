@@ -3,6 +3,9 @@ feature: Admin User Management
 task: T-090
 issue: #10
 archived: 2026-05-13
+last_updated: 2026-05-13
+changes:
+  - 2026-05-13: added sanitizeSort to listAll (ERR-010 Swagger sort=["string"] PropertyReferenceException)
 files:
   - src/main/resources/db/migration/V9__add_user_active_flag.sql
   - src/main/java/com/example/eom/exception/SelfDeactivationException.java
@@ -29,7 +32,8 @@ files:
 ## Logic Map
 
 ### UserServiceImpl (file: service/impl/UserServiceImpl.java)
-- `listAll(pageable)`: `userRepository.findAll(pageable)` → maps each `User` to `AdminUserResponse` (no passwordHash)
+- `listAll(pageable)`: calls `sanitizeSort(pageable)` → `userRepository.findAll(sanitized)` → maps each `User` to `AdminUserResponse` (no passwordHash)
+- `sanitizeSort(pageable)`: validates each sort property against `SORTABLE_FIELDS` whitelist (`id,email,role,active,createdAt`); invalid sort falls back to `Sort.by("id")`
 - `activate(userId)`: loads user by id (throws `EntityNotFoundException` if missing) → sets `active = true` → saves → returns `AdminUserResponse`
 - `deactivate(adminId, userId)`: throws `SelfDeactivationException` if `adminId.equals(userId)` → loads user → sets `active = false` → saves → returns `AdminUserResponse`
 - `toAdminResponse(user)`: private mapper → `AdminUserResponse(id, email, role, active, createdAt)`

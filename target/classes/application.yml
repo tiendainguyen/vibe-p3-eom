@@ -34,6 +34,8 @@ spring:
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
       timeout: 3000ms
+      ssl:
+        enabled: true
 
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}

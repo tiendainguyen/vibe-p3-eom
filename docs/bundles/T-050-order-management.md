@@ -3,9 +3,13 @@ feature: Order Management & Lifecycle
 task: T-050
 issue: #6
 archived: 2026-05-12
+last_updated: 2026-05-13
+changes:
+  - 2026-05-13: added sanitizeSort to listByUser and adminList (ERR-010); added V10 migration (ERR-011 order_status→VARCHAR fix)
 files:
   - src/main/resources/db/migration/V6__create_orders.sql
   - src/main/resources/db/migration/V7__create_order_items.sql
+  - src/main/resources/db/migration/V10__fix_order_status_varchar.sql
   - src/main/java/com/example/eom/domain/enums/OrderStatus.java
   - src/main/java/com/example/eom/domain/Order.java
   - src/main/java/com/example/eom/domain/OrderItem.java
@@ -40,10 +44,11 @@ files:
 ### OrderServiceImpl (file: src/main/java/com/example/eom/service/impl/OrderServiceImpl.java)
 - `createFromCart(userId)`: gets cart via CartService → throws 400 if empty → reserves inventory for each item (rollback on failure) → saves Order + OrderItems with snapshotted prices → clears cart → returns OrderResponse
 - `getById(userId, orderId)`: finds order or throws 404 → throws AccessDeniedException if `order.userId != userId` → returns response with items
-- `listByUser(userId, pageable)`: `findByUserIdOrderByCreatedAtDesc` → maps each order to response (loads items per order)
+- `listByUser(userId, pageable)`: calls `sanitizeSort(pageable)` → `findByUserIdOrderByCreatedAtDesc` → maps each order to response (loads items per order)
 - `cancel(userId, orderId)`: finds order, checks ownership → throws 409 if status != PENDING → releases inventory for all items → sets CANCELLED
-- `adminList(status, userId, from, to, pageable)`: JPQL filter query with all-nullable params → maps to responses
+- `adminList(status, userId, from, to, pageable)`: calls `sanitizeSort(pageable)` → JPQL filter query with all-nullable params → maps to responses
 - `updateStatus(orderId, request)`: finds order → validates against `VALID_ADMIN_TRANSITIONS` map → throws 409 if invalid → sets new status
+- `sanitizeSort(pageable)`: validates each sort property against `SORTABLE_FIELDS` whitelist (`id,status,totalAmount,createdAt,updatedAt`); invalid sort falls back to `Sort.by("id")`
 - `toResponse(order, items)`: private — maps OrderItem list to OrderItemResponse (computes subtotal = unitPrice × qty) → builds OrderResponse
 
 ### VALID_ADMIN_TRANSITIONS (static EnumMap in OrderServiceImpl)
@@ -85,5 +90,5 @@ files:
 **Controller:** src/main/java/com/example/eom/controller/OrderController.java, src/main/java/com/example/eom/controller/admin/AdminOrderController.java
 **DTO:** src/main/java/com/example/eom/dto/order/OrderResponse.java, src/main/java/com/example/eom/dto/order/OrderItemResponse.java, src/main/java/com/example/eom/dto/order/UpdateOrderStatusRequest.java
 **Config:** src/main/java/com/example/eom/config/GlobalExceptionHandler.java (added AccessDeniedException → 403)
-**Migration:** src/main/resources/db/migration/V6__create_orders.sql, src/main/resources/db/migration/V7__create_order_items.sql
+**Migration:** src/main/resources/db/migration/V6__create_orders.sql, src/main/resources/db/migration/V7__create_order_items.sql, src/main/resources/db/migration/V10__fix_order_status_varchar.sql
 **Tests:** src/test/java/com/example/eom/service/OrderServiceImplTest.java, src/test/java/com/example/eom/controller/OrderControllerTest.java

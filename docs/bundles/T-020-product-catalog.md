@@ -3,6 +3,9 @@ feature: Product Catalog with Search, Filtering & Redis Cache
 task: T-020
 issue: #3
 archived: 2026-05-12
+last_updated: 2026-05-13
+changes:
+  - 2026-05-13: fixed Swagger sort placeholder crash (sanitizeSort), PostgreSQL lower(bytea) bug (null→empty string in query), Redis serializer not loading (@ConditionalOnBean removed)
 files:
   - src/main/resources/db/migration/V3__create_products.sql
   - src/main/java/com/example/eom/domain/Product.java
@@ -33,17 +36,18 @@ files:
 ## Logic Map
 
 ### ProductServiceImpl (file: src/main/java/com/example/eom/service/impl/ProductServiceImpl.java)
-- `listProducts(keyword, category, minPrice, maxPrice, pageable)`: delegates to `findAllWithFilters`, cached with SpEL key `{#keyword,#category,#minPrice,#maxPrice,#pageable}` — returns Page<ProductResponse>
+- `listProducts(keyword, category, minPrice, maxPrice, pageable)`: converts null keyword/category to `""`, calls `sanitizeSort(pageable)`, delegates to `findAllWithFilters`, cached with SpEL key `{#keyword,#category,#minPrice,#maxPrice,#pageable}` — returns Page<ProductResponse>
 - `getById(id)`: fetches by ID, filters `.filter(Product::isActive)` — throws EntityNotFoundException if absent or inactive
 - `create(request)`: builds entity from DTO fields, saves, evicts all cache entries
 - `update(id, request)`: loads entity, applies only non-null fields from request, saves, evicts all cache entries
 - `delete(id)`: soft delete — sets `active = false` and saves, evicts all cache entries
+- `sanitizeSort(pageable)`: validates every sort property against `SORTABLE_FIELDS` whitelist (`id,name,price,category,createdAt,updatedAt`); invalid sort fallback to `Sort.by("id")`
 
 ### ProductRepository (file: src/main/java/com/example/eom/repository/ProductRepository.java)
-- `findAllWithFilters(keyword, category, minPrice, maxPrice, pageable)`: JPQL with `p.active = true` always on; each filter param uses `IS NULL OR` guard so null = no filter; keyword searches LOWER(name) and LOWER(description) via LIKE
+- `findAllWithFilters(keyword, category, minPrice, maxPrice, pageable)`: JPQL with `p.active = true` always on; string params use `= ''` guard (not `IS NULL`) to avoid PostgreSQL `lower(bytea)` type inference bug; keyword searches LOWER(name) and LOWER(description) via LIKE; numeric params still use `IS NULL OR`
 
 ### RedisConfig (file: src/main/java/com/example/eom/config/RedisConfig.java)
-- `cacheManager(factory)`: `@ConditionalOnBean(RedisConnectionFactory.class)` — skipped in test profile; builds `RedisCacheManager` with 10-min TTL, `StringRedisSerializer` for keys, `GenericJackson2JsonRedisSerializer` (with `NON_FINAL` default typing) for values
+- `cacheManager(connectionFactory)`: injects `RedisConnectionFactory` directly (no `@ConditionalOnBean`); builds `RedisCacheManager` with 10-min TTL, `StringRedisSerializer` for keys, `GenericJackson2JsonRedisSerializer` (with `NON_FINAL` default typing) for values
 
 ## Business Rules
 1. Only `active = true` products are returned by list and getById — inactive products yield 404
@@ -52,10 +56,11 @@ files:
 4. Update is partial: null fields in `UpdateProductRequest` are ignored, existing values kept
 5. Any write (create/update/delete) evicts the entire `products` cache (`allEntries = true`)
 6. Cache TTL is 10 minutes in production; disabled (`spring.cache.type=none`) in test profile
+7. `listProducts` never passes null String params to the repository — null keyword/category are converted to `""` in the service before the repository call
 
 ## Key Decisions
 - `allEntries = true` cache eviction on writes: avoids stale cache across all filter combinations at the cost of a full cache miss on next read
-- `@ConditionalOnBean(RedisConnectionFactory.class)` on cacheManager: prevents context failure when Redis is excluded in test profile
+- `RedisConnectionFactory` injected directly (not `@ConditionalOnBean`): `@ConditionalOnBean` caused a bean-ordering race where the factory wasn't yet registered when the condition evaluated — the JSON serializer was silently skipped and JDK serialization used instead
 - Soft delete over hard delete: preserves order history references (future order items will reference product IDs)
 - SpEL key includes `#pageable`: ensures page/sort variations get separate cache entries
 

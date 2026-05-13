@@ -18,7 +18,9 @@ import com.example.eom.service.WebhookService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,10 +30,13 @@ import java.time.Instant;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
+
+    private static final Set<String> SORTABLE_FIELDS = Set.of("id", "status", "totalAmount", "createdAt", "updatedAt");
 
     private static final Map<OrderStatus, OrderStatus> VALID_ADMIN_TRANSITIONS;
 
@@ -100,7 +105,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(readOnly = true)
     public Page<OrderResponse> listByUser(Long userId, Pageable pageable) {
-        return orderRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable)
+        return orderRepository.findByUserIdOrderByCreatedAtDesc(userId, sanitizeSort(pageable))
                 .map(order -> toResponse(order, orderItemRepository.findByOrderId(order.getId())));
     }
 
@@ -128,7 +133,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     public Page<OrderResponse> adminList(OrderStatus status, Long userId, Instant from, Instant to,
                                          Pageable pageable) {
-        return orderRepository.findAllWithFilters(status, userId, from, to, pageable)
+        return orderRepository.findAllWithFilters(status, userId, from, to, sanitizeSort(pageable))
                 .map(order -> toResponse(order, orderItemRepository.findByOrderId(order.getId())));
     }
 
@@ -189,6 +194,12 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findByStripePaymentIntentId(paymentIntentId)
                 .map(Order::getId)
                 .orElse(null);
+    }
+
+    private Pageable sanitizeSort(Pageable pageable) {
+        boolean valid = pageable.getSort().isUnsorted() ||
+                pageable.getSort().stream().allMatch(o -> SORTABLE_FIELDS.contains(o.getProperty()));
+        return valid ? pageable : PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("id"));
     }
 
     private Order findOrThrow(Long orderId) {

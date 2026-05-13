@@ -15,9 +15,10 @@ The bundle format is designed for **context efficiency**: one file load ≈ full
 ## Instructions
 
 ### Phase 1: Identify All Feature Files
-1. Find the GitHub issue number for this task ID — try in order:
-   - If `docs/PROGRESS.md` exists: read it and find the `#N` for this task ID
-   - Otherwise: search GitHub — `gh issue list --search "T-XXX in:title" --json number,title --jq '.[0].number'`
+1. Find the GitHub issue number for this task ID:
+   ```bash
+   gh issue list --search "T-XXX in:title" --json number,title --jq '.[0].number'
+   ```
 2. Use git to find all files changed in this feature:
    ```bash
    git diff --name-only HEAD~N HEAD   # or git log --name-only

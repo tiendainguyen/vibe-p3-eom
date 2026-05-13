@@ -38,6 +38,7 @@ class PaymentServiceImplTest {
     @Mock StripeGateway stripeGateway;
     @Mock OrderService orderService;
     @Mock NotificationPublisher notificationPublisher;
+    @Mock WebhookService webhookService;
 
     private static final Long USER_ID = 1L;
     private static final Long ORDER_ID = 100L;
@@ -45,7 +46,8 @@ class PaymentServiceImplTest {
     private static final String CLIENT_SECRET = "pi_test123_secret_abc";
 
     private PaymentServiceImpl paymentService() {
-        return new PaymentServiceImpl(stripeGateway, orderService, notificationPublisher, "whsec_dummy");
+        return new PaymentServiceImpl(stripeGateway, orderService, notificationPublisher,
+                webhookService, "whsec_dummy");
     }
 
     private OrderResponse pendingOrder() {

@@ -37,6 +37,8 @@ class OrderServiceImplTest {
     @Mock OrderItemRepository orderItemRepository;
     @Mock CartService cartService;
     @Mock InventoryService inventoryService;
+    @Mock NotificationPublisher notificationPublisher;
+    @Mock WebhookService webhookService;
     @InjectMocks OrderServiceImpl orderService;
 
     private static final Long USER_ID = 1L;
@@ -175,7 +177,7 @@ class OrderServiceImplTest {
         given(orderItemRepository.findByOrderId(ORDER_ID)).willReturn(List.of(orderItem()));
 
         OrderResponse response = orderService.updateStatus(ORDER_ID,
-                new UpdateOrderStatusRequest(OrderStatus.PROCESSING));
+                new UpdateOrderStatusRequest(OrderStatus.PROCESSING, null));
 
         assertThat(response.status()).isEqualTo(OrderStatus.PROCESSING);
     }
@@ -185,7 +187,7 @@ class OrderServiceImplTest {
         given(orderRepository.findById(ORDER_ID)).willReturn(Optional.of(order(OrderStatus.PENDING)));
 
         assertThatThrownBy(() -> orderService.updateStatus(ORDER_ID,
-                new UpdateOrderStatusRequest(OrderStatus.DELIVERED)))
+                new UpdateOrderStatusRequest(OrderStatus.DELIVERED, null)))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("Invalid status transition");
     }

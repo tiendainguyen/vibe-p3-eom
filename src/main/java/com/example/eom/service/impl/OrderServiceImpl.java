@@ -12,7 +12,9 @@ import com.example.eom.repository.OrderItemRepository;
 import com.example.eom.repository.OrderRepository;
 import com.example.eom.service.CartService;
 import com.example.eom.service.InventoryService;
+import com.example.eom.service.NotificationPublisher;
 import com.example.eom.service.OrderService;
+import com.example.eom.service.WebhookService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -44,6 +46,8 @@ public class OrderServiceImpl implements OrderService {
     private final OrderItemRepository orderItemRepository;
     private final CartService cartService;
     private final InventoryService inventoryService;
+    private final NotificationPublisher notificationPublisher;
+    private final WebhookService webhookService;
 
     @Override
     @Transactional
@@ -142,6 +146,13 @@ public class OrderServiceImpl implements OrderService {
 
         order.setStatus(next);
         orderRepository.save(order);
+
+        if (next == OrderStatus.SHIPPED) {
+            notificationPublisher.publishOrderShipped(orderId, request.trackingInfo());
+            webhookService.dispatch(WebhookService.EVENT_ORDER_SHIPPED, orderId);
+        } else if (next == OrderStatus.DELIVERED) {
+            webhookService.dispatch(WebhookService.EVENT_ORDER_DELIVERED, orderId);
+        }
 
         return toResponse(order, orderItemRepository.findByOrderId(orderId));
     }

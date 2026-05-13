@@ -10,5 +10,9 @@ public record UpdateOrderStatusRequest(
         @Schema(description = "New status — valid admin transitions: PAID→PROCESSING→SHIPPED→DELIVERED",
                 example = "PROCESSING")
         @NotNull(message = "status is required")
-        OrderStatus status
+        OrderStatus status,
+
+        @Schema(description = "Tracking number or URL (optional, relevant when status is SHIPPED)",
+                example = "1Z999AA10123456784")
+        String trackingInfo
 ) {}

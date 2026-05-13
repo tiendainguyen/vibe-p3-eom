@@ -1,12 +1,12 @@
 ---
 name: task-breakdown
-description: Analyzes assignment.md and breaks the project into business-feature tasks. Creates one GitHub issue per feature (with full URD content) and a local PROGRESS.md mapping task IDs to issue numbers. Use when the user runs /task-breakdown.
+description: Analyzes assignment.md and breaks the project into business-feature tasks. Creates one GitHub issue per feature with full URD content. Use when the user runs /task-breakdown.
 ---
 
 # Task Breakdown Skill
 
 ## Purpose
-Read `assignment.md` → identify business features → create one GitHub issue per feature containing the full URD → write `docs/PROGRESS.md` as a local index mapping task IDs to issue numbers.
+Read `assignment.md` → identify business features → create one GitHub issue per feature containing the full URD.
 
 Issues are the source of truth for requirements. No local docs/urd/ files needed.
 
@@ -84,26 +84,8 @@ BODY
 )"
 ```
 
-### Phase 4: Write PROGRESS.md
-After all issues are created, write `docs/PROGRESS.md`:
-
-```markdown
-# Progress — [Project Name]
-
-> Requirements: GitHub Issues on this repo
-> Bundles (post-archive): docs/bundles/
-
-| ID | Feature | Issue | Status |
-|----|---------|-------|--------|
-| T-001 | Infrastructure Setup | #1 | pending |
-| T-010 | Feature Name | #2 | pending |
-
-`pending` · `in_progress` · `completed` · `blocked`
-```
-
-### Phase 5: Validate
+### Phase 4: Validate
 - [ ] Every feature from assignment.md has a GitHub issue
-- [ ] PROGRESS.md has one row per task with correct issue numbers
 - [ ] No circular dependencies
 - [ ] T-001 infrastructure has no dependencies
 

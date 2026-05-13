@@ -190,7 +190,7 @@ class OrderControllerTest {
         mockMvc.perform(put("/api/admin/orders/100/status").with(asAdmin())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new UpdateOrderStatusRequest(OrderStatus.PROCESSING))))
+                                new UpdateOrderStatusRequest(OrderStatus.PROCESSING, null))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("PROCESSING"));
     }
@@ -211,7 +211,7 @@ class OrderControllerTest {
         mockMvc.perform(put("/api/admin/orders/100/status").with(asAdmin())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new UpdateOrderStatusRequest(OrderStatus.DELIVERED))))
+                                new UpdateOrderStatusRequest(OrderStatus.DELIVERED, null))))
                 .andExpect(status().isConflict());
     }
 }

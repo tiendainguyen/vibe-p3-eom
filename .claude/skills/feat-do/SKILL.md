@@ -13,9 +13,10 @@ Turn a GitHub issue into working code. Single command from issue → implementat
 ## Instructions
 
 ### Phase 1: Load Issue Context
-1. Find the GitHub issue number for this task ID — try in order:
-   - If `docs/PROGRESS.md` exists: read it and find the `#N` for this task ID
-   - Otherwise: search GitHub — `gh issue list --search "T-XXX in:title" --json number,title --jq '.[0].number'`
+1. Find the GitHub issue number for this task ID:
+   ```bash
+   gh issue list --search "T-XXX in:title" --json number,title --jq '.[0].number'
+   ```
 2. Fetch the issue content:
    ```bash
    gh issue view <issue-number> --json title,body,labels
@@ -85,9 +86,6 @@ gh issue comment <issue-number> --body "$(cat <<'EOF'
 EOF
 )"
 ```
-
-### Phase 6: Update PROGRESS.md (if exists)
-If `docs/PROGRESS.md` exists, change task status from `pending` to `completed`. Skip if file was deleted.
 
 ---
 

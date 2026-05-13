@@ -6,12 +6,12 @@ import com.example.eom.dto.order.OrderResponse;
 import com.example.eom.service.NotificationPublisher;
 import com.example.eom.service.OrderService;
 import com.example.eom.service.PaymentService;
+import com.example.eom.service.WebhookService;
 import com.example.eom.service.gateway.StripeGateway;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
 import com.stripe.model.EventDataObjectDeserializer;
 import com.stripe.model.PaymentIntent;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,14 +23,17 @@ public class PaymentServiceImpl implements PaymentService {
     private final StripeGateway stripeGateway;
     private final OrderService orderService;
     private final NotificationPublisher notificationPublisher;
+    private final WebhookService webhookService;
     private final String webhookSecret;
 
     public PaymentServiceImpl(StripeGateway stripeGateway, OrderService orderService,
                               NotificationPublisher notificationPublisher,
+                              WebhookService webhookService,
                               @Value("${stripe.webhook-secret}") String webhookSecret) {
         this.stripeGateway = stripeGateway;
         this.orderService = orderService;
         this.notificationPublisher = notificationPublisher;
+        this.webhookService = webhookService;
         this.webhookSecret = webhookSecret;
     }
 
@@ -78,6 +81,7 @@ public class PaymentServiceImpl implements PaymentService {
                     Long orderId = orderService.findOrderIdByPaymentIntentId(piId);
                     if (orderId != null) {
                         notificationPublisher.publishOrderConfirmed(orderId);
+                        webhookService.dispatch(WebhookService.EVENT_ORDER_PAID, orderId);
                     }
                 }
             }
